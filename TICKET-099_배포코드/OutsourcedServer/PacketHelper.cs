@@ -45,12 +45,24 @@ namespace BattleArena
         public static async Task<string?> ReceiveAsync(Socket socket)
         {
             byte[] header = new byte[4];
+            int received = 0;
 
+            // 헤더 4바이트 받기
+            while(received < 4)
+            {
+                int bytesRead = await socket.ReceiveAsync(new ArraySegment<byte>(header, received, 4 - received), SocketFlags.None);
+
+                if (bytesRead == 0) return null;
+                received += bytesRead;
+            }
+
+            /*
             // 먼저 헤더 4바이트를 읽어 본문 길이를 알아냅니다.
             // Receive는 블로킹 함수라서 Task.Run으로 감싸 비동기화했습니다.
             int n = await Task.Run(() => socket.Receive(header, 0, 4, SocketFlags.None));
 
             if (n == 0) return null;          // 상대가 연결을 닫음
+            */
 
             int bodyLength = BitConverter.ToInt32(header, 0);
 
@@ -59,8 +71,21 @@ namespace BattleArena
 
             byte[] body = new byte[bodyLength];
 
+            received = 0;
+            // 본문을 전부 받을때까지 반복
+            while (received < bodyLength)
+            {
+                int n = await socket.ReceiveAsync(new ArraySegment<byte>(body, received, bodyLength - received), SocketFlags.None);
+
+                if (n == 0) return null;
+                received += n;
+            }
+            
+            /*
             // 알아낸 길이만큼 본문을 읽습니다.
             await Task.Run(() => socket.Receive(body, 0, bodyLength, SocketFlags.None));
+            */
+
 
             return Encoding.UTF8.GetString(body, 0, bodyLength);
         }

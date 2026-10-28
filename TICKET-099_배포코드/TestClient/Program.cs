@@ -182,6 +182,7 @@ namespace BattleArena
             _udp = null;
             _myId = 0;
             _tcpStatus = "재접속 중...";
+            _lastState = "";
 
             await Task.Delay(300);
             await ConnectAsync();

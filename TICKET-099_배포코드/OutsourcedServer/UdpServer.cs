@@ -76,8 +76,8 @@ namespace BattleArena
                 {
                     var result = await _socket.ReceiveFromAsync(
                         new ArraySegment<byte>(buffer), SocketFlags.None, from);
-
-                    string msg = Encoding.UTF8.GetString(buffer);
+                    // 기존 buffer 단독 -> 현재 받은 만큼 문자열 변환
+                    string msg = Encoding.UTF8.GetString(buffer, 0 , result.ReceivedBytes);
 
                     HandlePacket(msg, result.RemoteEndPoint);
                 }
@@ -117,16 +117,19 @@ namespace BattleArena
 
             // 첫 UDP 패킷이면 주소를 기억해둡니다.
             // 앞으로 이 주소로 STATE를 보내줄 겁니다.
+            // 일치여부 확인 코드 등록
             if (session.UdpEndPoint == null)
             {
                 session.UdpEndPoint = from;
                 Console.WriteLine($"[UDP] {session.Nickname} 주소 등록 : {from}");
             }
+            else if (!session.UdpEndPoint.Equals(from)) return;
 
             // 오래된 패킷은 버립니다.
             // UDP는 순서를 보장하지 않아서 5번보다 6번이 먼저 올 수 있습니다.
             // 그때 5번을 적용하면 캐릭터가 뒤로 갑니다.
-            if (seq < session.LastSeq)
+            // 21로 측정되던거 20으로 수정하기 위해서 = 붙힘
+            if (seq <= session.LastSeq)
             {
                 Interlocked.Increment(ref _droppedCount);
                 return;

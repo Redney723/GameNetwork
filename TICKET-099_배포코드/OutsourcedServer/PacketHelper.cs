@@ -42,20 +42,12 @@ namespace BattleArena
         // ═══════════════════════════════════════
         // 수신
         // ═══════════════════════════════════════
-        public static async Task<string?> ReceiveAsync(Socket socket)
+        public static async Task<string?> ReceiveAsync(Socket socket) 
         {
-            byte[] header = new byte[4];
-            int received = 0;
+            byte[]? header = await ReceiveExactAsync(socket,4);
+            if(header == null) return null;
 
-            // 헤더 4바이트 받기
-            while(received < 4)
-            {
-                int bytesRead = await socket.ReceiveAsync(new ArraySegment<byte>(header, received, 4 - received), SocketFlags.None);
-
-                if (bytesRead == 0) return null;
-                received += bytesRead;
-            }
-
+            
             /*
             // 먼저 헤더 4바이트를 읽어 본문 길이를 알아냅니다.
             // Receive는 블로킹 함수라서 Task.Run으로 감싸 비동기화했습니다.
@@ -69,17 +61,9 @@ namespace BattleArena
             // 말도 안 되는 길이가 오면 끊습니다 (악성 패킷 방어)
             if (bodyLength <= 0 || bodyLength > MAX_BODY) return null;
 
-            byte[] body = new byte[bodyLength];
-
-            received = 0;
-            // 본문을 전부 받을때까지 반복
-            while (received < bodyLength)
-            {
-                int n = await socket.ReceiveAsync(new ArraySegment<byte>(body, received, bodyLength - received), SocketFlags.None);
-
-                if (n == 0) return null;
-                received += n;
-            }
+            byte[] body = await ReceiveExactAsync(socket,bodyLength);
+            if(body == null) return null;
+           
             
             /*
             // 알아낸 길이만큼 본문을 읽습니다.
@@ -89,5 +73,23 @@ namespace BattleArena
 
             return Encoding.UTF8.GetString(body, 0, bodyLength);
         }
+
+        public static async Task<byte[]?> ReceiveExactAsync(Socket socket,int count) 
+        {
+            byte[] buffer = new byte[count];
+            int received = 0;
+
+            // 본문을 전부 받을때까지 반복
+            while (received < count)
+            {
+                int n = await socket.ReceiveAsync(new ArraySegment<byte>(buffer, received, count - received), SocketFlags.None);
+
+                //연결종료
+                if (n == 0) return null;
+                received += n;
+            }
+            return buffer;
+        }
+
     }
 }

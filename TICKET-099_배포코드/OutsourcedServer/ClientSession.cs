@@ -70,7 +70,21 @@ namespace BattleArena
             dynamic? packet = JsonConvert.DeserializeObject(json);
             if (packet == null) return;
 
-            int type = (int)packet.Type;
+            // 타입 필드 숫자로 변환이 안되면 무시
+            if (packet.Type == null)
+            {
+                Console.WriteLine($"[경고] Type이 없는 패킷");
+                return;
+            }
+            
+            string typeText = packet.Type.ToString();
+            int type;
+            if (!int.TryParse(typeText, out type))
+            {
+                Console.WriteLine("[경고] 잘못된 패킷");
+                return;
+            }
+
 
             switch (type)
             {

@@ -153,11 +153,16 @@ namespace BattleArena
                 _udp = new Socket(AddressFamily.InterNetwork,
                                   SocketType.Dgram, ProtocolType.Udp);
 
+
+                //바인딩
+                _udp.Bind(new IPEndPoint(IPAddress.Any, 0));
+
                 _udpServer = new IPEndPoint(IPAddress.Parse(SERVER_IP), StudentConfig.UdpPort);
 
                 _seq = 0;
                 _udpError = "";
 
+                
                 _ = UdpReceiveLoopAsync();
             }
             catch (Exception ex)

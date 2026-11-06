@@ -39,4 +39,9 @@
 	오답 - 잘못누른 유저(string), 카드-(int) - S2C
 	게임 결과 - 승자)(string), 추가할 카드(int) - S2C
 	게임 종료 - 승자 전달(string) - S2C
-	
+
+# 게임 스키마 설계
+
+<img width="1800" height="1150" alt="image" src="https://github.com/user-attachments/assets/7d5b0fd3-b5aa-4e10-af6f-479270930ecc" />
+
+
